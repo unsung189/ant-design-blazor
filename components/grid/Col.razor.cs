@@ -1,4 +1,5 @@
-﻿using System.Text.RegularExpressions;
+﻿using System.Linq;
+using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Components;
 using OneOf;
 
@@ -59,11 +60,13 @@ namespace AntDesign
 
         [Parameter]
         public OneOf<int, EmbeddedProperty> Xxl { get; set; }
+        [Parameter]
+        public AntLableAlignType LableAlignType { get; set; } = AntLableAlignType.Right;
 
         [CascadingParameter]
         public Row Row { get; set; }
 
-        private string _hostFlexStyle = null;
+        private string FlexStyle { get; set; }
 
         private string GutterStyle { get; set; }
 
@@ -87,6 +90,7 @@ namespace AntDesign
                 .GetIf(() => $"{prefixCls}-pull-{this.Pull.Value}", () => this.Pull.Value != null)
                 .GetIf(() => $"{prefixCls}-push-{this.Push.Value}", () => this.Push.Value != null)
                 .If($"{prefixCls}-rtl", () => RTL)
+                .If($"ant-form-item-label-left", () => this.LableAlignType == AntLableAlignType.Left)
                 ;
 
             SetSizeClassMapper(prefixCls, Xs, "xs");
@@ -115,19 +119,24 @@ namespace AntDesign
 
         private void SetHostFlexStyle()
         {
-            if (this.Flex.Value == null)
+            if (this.Flex.Value == null && this.Row.Cols.All(x => x.Flex.Value == null))
                 return;
-
-            this._hostFlexStyle = this.Flex.Match(str =>
+            var prefixStyle = "flex:";
+            if (this.Flex.Value == null)
+            {
+                FlexStyle = $"{prefixStyle} 1 1 auto;";
+                return;
+            }
+            FlexStyle = this.Flex.Match(str =>
                 {
                     if (Regex.Match(str, "^\\d+(\\.\\d+)?(px|em|rem|%)$").Success)
                     {
-                        return $"0 0 {Flex}";
+                        return $"{prefixStyle} 0 0 {Flex.Value};";
                     }
 
-                    return Flex.AsT0;
+                    return $"{prefixStyle} {Flex.Value};";
                 },
-                num => $"{Flex} {Flex} auto");
+                num => $"{prefixStyle} {Flex.Value} {Flex.Value} auto;");
         }
 
         protected override void OnInitialized()

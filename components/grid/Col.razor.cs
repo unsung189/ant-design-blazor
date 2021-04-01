@@ -61,7 +61,7 @@ namespace AntDesign
         [Parameter]
         public OneOf<int, EmbeddedProperty> Xxl { get; set; }
         [Parameter]
-        public AntLableAlignType LableAlignType { get; set; } = AntLableAlignType.Right;
+        public AntLableAlignType LableAlign { get; set; } = AntLableAlignType.Right;
 
         [CascadingParameter]
         public Row Row { get; set; }
@@ -90,7 +90,7 @@ namespace AntDesign
                 .GetIf(() => $"{prefixCls}-pull-{this.Pull.Value}", () => this.Pull.Value != null)
                 .GetIf(() => $"{prefixCls}-push-{this.Push.Value}", () => this.Push.Value != null)
                 .If($"{prefixCls}-rtl", () => RTL)
-                .If($"ant-form-item-label-left", () => this.LableAlignType == AntLableAlignType.Left)
+                .If($"ant-form-item-label-left", () => this.LableAlign == AntLableAlignType.Left)
                 ;
 
             SetSizeClassMapper(prefixCls, Xs, "xs");
@@ -137,6 +137,18 @@ namespace AntDesign
                     return $"{prefixStyle} {Flex.Value};";
                 },
                 num => $"{prefixStyle} {Flex.Value} {Flex.Value} auto;");
+        }
+
+        private string GetStyle()
+        {
+            var styleMapper = new ClassMapper();
+            styleMapper
+                .If(Style, () => string.IsNullOrWhiteSpace(Style) == false)
+                .If(GutterStyle, () => string.IsNullOrWhiteSpace(GutterStyle) == false)
+                .If(FlexStyle, () => string.IsNullOrWhiteSpace(FlexStyle) == false)
+                ;
+
+            return styleMapper.Class;
         }
 
         protected override void OnInitialized()
